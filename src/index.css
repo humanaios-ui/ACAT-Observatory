@@ -1,0 +1,81 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+:root {
+  /* Design System Colors */
+  --accent-amber: #D4A04A;
+  --accent-amber-bright: #E8B85A;
+  --accent-amber-dim: #A07830;
+  --accent-ember: #C4703A;
+  --accent-sage: #7A9A6A;
+  --accent-blue: #6A8AAA;
+  --pale-orange: #E8E0D4;
+  --bg-primary: #1A1714;
+  --muted-orange-2: #332E27;
+  /* Observatory Specific Colors */
+  --bg: #0f0e0c;
+  --bg-2: #161310;
+  --panel: #1d1915;
+  --panel-2: #26211c;
+  --text: #f4ebdf;
+  --muted: #c2b8a6;
+  --line: rgba(212, 160, 74, 0.18);
+  --line-strong: rgba(212, 160, 74, 0.35);
+  --danger: #d97d70;
+  --success: #87b68b;
+  --blue: #88a7d8;
+  /* Shadows & Radii */
+  --shadow: 0 18px 50px rgba(0,0,0,.34);
+  --radius: 20px;
+  --radius-sm: 14px;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(212,160,74,.1), transparent 28%),
+    linear-gradient(180deg, var(--bg), #0b0a08 60%);
+  background-color: var(--bg);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .03;
+  background-image:
+    radial-gradient(circle at 20% 20%, #fff 0.6px, transparent 0.8px),
+    radial-gradient(circle at 75% 30%, #fff 0.6px, transparent 0.8px),
+    radial-gradient(circle at 50% 75%, #fff 0.6px, transparent 0.8px);
+  background-size: 22px 22px;
+  z-index: -1;
+}
+/* Custom Scrollbar for tables */
+.table-wrap::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.table-wrap::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+.table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+.table-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
