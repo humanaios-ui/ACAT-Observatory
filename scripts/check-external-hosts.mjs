@@ -24,7 +24,27 @@ const STYLESHEET_HOSTS = new Set(['fonts.googleapis.com']);
 
 const failures = [];
 
-const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+// The browser decodes character references and \u escapes before it reads a
+// URL, so the scan must too. Otherwise "https&#58;//host" or "https\u003a//host"
+// hides the host from the regex.
+function decodeEntities(text) {
+  return text
+    .replace(/&(?:#x0*([0-9a-f]+)|#0*(\d+));?/gi, (_, hex, dec) =>
+      String.fromCodePoint(parseInt(hex ?? dec, hex ? 16 : 10)),
+    )
+    .replace(/&colon;?/gi, ':');
+}
+
+function decodeEscapes(text) {
+  return text.replace(/\\u([0-9a-f]{4})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+function normalize(file, text) {
+  return file.endsWith('.html') ? decodeEntities(text) : decodeEscapes(text);
+}
+
+const indexFile = join(DIST, 'index.html');
+const html = normalize(indexFile, readFileSync(indexFile, 'utf8'));
 
 // Parse the hostname from a URL, so "https://github.com@evil.example.net/"
 // is checked against evil.example.net, not github.com.
@@ -53,12 +73,12 @@ function walk(dir) {
   });
 }
 
-const files = [join(DIST, 'index.html'), ...walk(join(DIST, 'assets'))].filter((f) =>
+const files = [indexFile, ...walk(join(DIST, 'assets'))].filter((f) =>
   /\.(html|js|css)$/.test(f),
 );
 
 for (const file of files.filter((f) => f.endsWith('.css'))) {
-  const css = readFileSync(file, 'utf8');
+  const css = normalize(file, readFileSync(file, 'utf8'));
   for (const match of css.matchAll(/@import\s+(?:url\(\s*)?(["']?)([^"')\s;]+)\1/gi)) {
     const url = match[2];
     const host = hostOf(url);
@@ -71,7 +91,7 @@ for (const file of files.filter((f) => f.endsWith('.css'))) {
 // 3. Every URL named anywhere in the built output must resolve to an allowed host.
 const seen = new Set();
 for (const file of files) {
-  const text = readFileSync(file, 'utf8');
+  const text = normalize(file, readFileSync(file, 'utf8'));
   for (const match of text.matchAll(/https?:\/\/[^\s"'<>)\\`]+/g)) {
     const host = hostOf(match[0]);
     if (host === null) {
