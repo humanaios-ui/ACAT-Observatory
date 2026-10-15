@@ -56,8 +56,27 @@ function decodeEscapes(text) {
  * @param {string} text - Raw file contents.
  * @returns {string} Normalized contents.
  */
+/**
+ * Decode CSS hex escapes (\69, \3a, with an optional trailing space) and
+ * backslash-escaped characters, as the CSS tokenizer does.
+ * @param {string} text - Raw CSS text.
+ * @returns {string} CSS text with escapes replaced by their characters.
+ */
+function decodeCssEscapes(text) {
+  return text
+    .replace(/\\([0-9a-f]{1,6})(?:\r\n|[ \t\r\n\f])?/gi, (_, hex) => {
+      const codePoint = parseInt(hex, 16);
+      return codePoint === 0 || codePoint > 0x10ffff || (codePoint >= 0xd800 && codePoint <= 0xdfff)
+        ? '�'
+        : String.fromCodePoint(codePoint);
+    })
+    .replace(/\\([^\r\n\f])/g, '$1');
+}
+
 function normalize(file, text) {
-  return file.endsWith('.html') ? decodeEntities(text) : decodeEscapes(text);
+  if (file.endsWith('.html')) return decodeEntities(text);
+  if (file.endsWith('.css')) return decodeCssEscapes(text);
+  return decodeEscapes(text);
 }
 
 const indexFile = join(DIST, 'index.html');
