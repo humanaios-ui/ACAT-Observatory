@@ -35,9 +35,10 @@ const failures = [];
  */
 function decodeEntities(text) {
   return text
-    .replace(/&(?:#x0*([0-9a-f]+)|#0*(\d+));?/gi, (_, hex, dec) =>
-      String.fromCodePoint(parseInt(hex ?? dec, hex ? 16 : 10)),
-    )
+    .replace(/&(?:#x0*([0-9a-f]+)|#0*(\d+));?/gi, (_, hex, dec) => {
+      const codePoint = parseInt(hex ?? dec, hex ? 16 : 10);
+      return codePoint > 0x10ffff ? '\ufffd' : String.fromCodePoint(codePoint);
+    })
     .replace(/&colon;?/gi, ':');
 }
 
@@ -99,8 +100,11 @@ function hostOf(url) {
 
 // 1. Script and stylesheet tags must be same-origin. Matches single and
 // double quotes.
-for (const match of html.matchAll(/<(script|link)\b[^>]*?\b(?:src|href)\s*=\s*(["'])([^"']+)\2/gi)) {
-  const [, tag, , url] = match;
+for (const match of html.matchAll(
+  /<(script|link)\b[^>]*?\b(?:src|href)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s"'`=<>]+))/gi,
+)) {
+  const [, tag, doubleQuoted, singleQuoted, unquoted] = match;
+  const url = doubleQuoted ?? singleQuoted ?? unquoted;
   if (/^https?:\/\//i.test(url) || url.startsWith('//')) {
     failures.push(`<${tag}> loads a third-party URL: ${url}`);
   }
