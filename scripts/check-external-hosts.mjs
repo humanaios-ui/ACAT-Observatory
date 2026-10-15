@@ -101,7 +101,7 @@ function hostOf(url) {
 // 1. Script and stylesheet tags must be same-origin. Matches single and
 // double quotes.
 for (const match of html.matchAll(
-  /<(script|link)\b[^>]*?\b(?:src|href)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s"'`=<>]+))/gi,
+  /<(script|link)\b(?:[^>"']|"[^"]*"|'[^']*')*?\b(?:src|href)\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s"'`=<>]+))/gi,
 )) {
   const [, tag, doubleQuoted, singleQuoted, unquoted] = match;
   const url = doubleQuoted ?? singleQuoted ?? unquoted;
