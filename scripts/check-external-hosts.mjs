@@ -27,6 +27,12 @@ const failures = [];
 // The browser decodes character references and \u escapes before it reads a
 // URL, so the scan must too. Otherwise "https&#58;//host" or "https\u003a//host"
 // hides the host from the regex.
+
+/**
+ * Decode HTML numeric character references and named colon entities.
+ * @param {string} text - Raw HTML text.
+ * @returns {string} Text with references replaced by their characters.
+ */
 function decodeEntities(text) {
   return text
     .replace(/&(?:#x0*([0-9a-f]+)|#0*(\d+));?/gi, (_, hex, dec) =>
@@ -35,10 +41,21 @@ function decodeEntities(text) {
     .replace(/&colon;?/gi, ':');
 }
 
+/**
+ * Decode \\uXXXX escapes, as used in JS and CSS strings.
+ * @param {string} text - Raw JS or CSS text.
+ * @returns {string} Text with escapes replaced by their characters.
+ */
 function decodeEscapes(text) {
   return text.replace(/\\u([0-9a-f]{4})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
 }
 
+/**
+ * Normalize file text according to its type, so hidden URLs become visible.
+ * @param {string} file - Path of the file; decides HTML or JS/CSS handling.
+ * @param {string} text - Raw file contents.
+ * @returns {string} Normalized contents.
+ */
 function normalize(file, text) {
   return file.endsWith('.html') ? decodeEntities(text) : decodeEscapes(text);
 }
@@ -48,6 +65,11 @@ const html = normalize(indexFile, readFileSync(indexFile, 'utf8'));
 
 // Parse the hostname from a URL, so "https://github.com@evil.example.net/"
 // is checked against evil.example.net, not github.com.
+/**
+ * Return the parsed hostname of a URL, or null if it cannot be parsed.
+ * @param {string} url - Absolute URL to parse.
+ * @returns {string|null} Hostname, or null.
+ */
 function hostOf(url) {
   try {
     return new URL(url).hostname;
@@ -66,6 +88,11 @@ for (const match of html.matchAll(/<(script|link)\b[^>]*?\b(?:src|href)\s*=\s*([
 }
 
 // 2. Stylesheet @import rules may only name STYLESHEET_HOSTS.
+/**
+ * List every file under a directory, recursively.
+ * @param {string} dir - Directory to walk.
+ * @returns {string[]} Paths of all files found.
+ */
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
